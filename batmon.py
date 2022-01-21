@@ -25,6 +25,8 @@ MIN_CHARGE = 20 if opt in ['', 'b', 'B'] else (15 if opt in ['a','A'] else 25)
 CHECK_POW = 'upower -i $(upower -e | grep BAT) | grep -E "state|perc" > batmon.txt'
 ALERT = 'spd-say "Plug In... Plug In... Plug In"'
 
+print()
+
 while True:
     os.system(CHECK_POW)
     with open("batmon.txt") as f:
