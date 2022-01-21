@@ -16,14 +16,18 @@ def fancy_print(text):
     sys.stdout.write(" "*(N_DOTS+textlen))
     move_cursor(0,-textlen-N_DOTS)
 
+########################
+# BASIC CONFIGURATIONS #
 SLEEP_TIME = 2 #sleep for 2 "units"
 UNIT = 60 #seconds
+MSG = "Plug it in, you frickin moron!" #what to yell when the battery's low
+########################
 
 opt = input("When should we alert you?\nA. 15%\nB. 20%\nC. 25%\n(Hit Enter for default 20%)\n")
 MIN_CHARGE = 20 if opt in ['', 'b', 'B'] else (15 if opt in ['a','A'] else 25)
 
 CHECK_POW = 'upower -i $(upower -e | grep BAT) | grep -E "state|perc" > batmon.txt'
-ALERT = 'spd-say "Plug In... Plug In... Plug In"'
+ALERT = f'spd-say "{MSG}"'
 
 print()
 
