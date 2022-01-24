@@ -64,7 +64,7 @@ else:
 CHECK_POW = 'upower -i $(upower -e | grep BAT) | grep -E "state|perc" > batmon.txt'
 ALERT = f'spd-say "{MSG}"'
 
-print()
+print("Press q to quit.")
 
 state = {'quit':False}
 input_thread(await_input, state)
