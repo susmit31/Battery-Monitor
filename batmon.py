@@ -52,17 +52,24 @@ def input_thread(handler, state_dict):
 # BASIC CONFIGURATIONS #
 SLEEP_TIME = 2 #sleep for 2 "units"
 UNIT = 60 #seconds
-MSG = "Plug it in, you frickin moron!" #what to yell when the battery's low
+MSG_PLUGIN = "Plug it in, you frickin moron!" #what to yell when the battery's low
+MSG_PLUGOUT = "Plug it out, Red-hair"
 ########################
 
 if len(sys.argv) < 2:
     opt = input("When should we alert you?\nA. 15%\nB. 20%\nC. 25%\n(Hit Enter for default 20%)\n")
     MIN_CHARGE = 20 if opt in ['', 'b', 'B'] else (15 if opt in ['a','A'] else 25)
 else:
-    MIN_CHARGE = 20
+    MIN_CHARGE = int(sys.argv[1])
+
+if len(sys.argv) > 2:
+    MAX_CHARGE = int(sys.argv[1])
+else:
+    MAX_CHARGE = 80
 
 CHECK_POW = 'upower -i $(upower -e | grep BAT) | grep -E "state|perc" > batmon.txt'
-ALERT = f'spd-say "{MSG}"'
+ALERT_PLUGIN = f'spd-say "{MSG_PLUGIN}"'
+ALERT_PLUGOUT = f'spd-say "{MSG_PLUGOUT}"'
 
 print("Press q to quit.")
 
@@ -72,11 +79,13 @@ while True:
     os.system(CHECK_POW)
     with open("batmon.txt") as f:
         output = f.read().split()
-
+    perc = int(output[3][:-1])
     if output[1]=='discharging':
-        perc = int(output[3][:-1])
         if perc <= MIN_CHARGE:
-            os.system(ALERT)
+            os.system(ALERT_PLUGIN)
+    else:
+        if perc >= MAX_CHARGE:
+            os.system(ALERT_PLUGOUT)
 
     curr_time = time.time()
     stop_time = curr_time + SLEEP_TIME*UNIT
