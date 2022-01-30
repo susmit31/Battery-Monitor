@@ -63,7 +63,7 @@ else:
     MIN_CHARGE = int(sys.argv[1])
 
 if len(sys.argv) > 2:
-    MAX_CHARGE = int(sys.argv[1])
+    MAX_CHARGE = int(sys.argv[2])
 else:
     MAX_CHARGE = 80
 
