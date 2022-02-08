@@ -48,6 +48,13 @@ def input_thread(handler, state_dict):
     inp = threading.Thread(target=handler, args= (state_dict,))
     inp.start()
 
+def retrieve_and_rewrite(filename):
+    with open(filename, "r") as f:
+        contents = f.read()[:-1]
+        contents+='\n'
+    with open(filename, "w") as f:
+        f.write(contents)
+
 ########################
 # BASIC CONFIGURATIONS #
 SLEEP_TIME = 2 #sleep for 2 "units"
@@ -80,12 +87,17 @@ while True:
     with open("batmon.txt") as f:
         output = f.read().split()
     perc = int(output[3][:-1])
+    with open("data.csv", "a") as f:
+        f.write(f"{perc},")
+
     if output[1]=='discharging':
         if perc <= MIN_CHARGE:
             os.system(ALERT_PLUGIN)
+            retrieve_and_rewrite("data.csv")
     else:
         if perc >= MAX_CHARGE:
             os.system(ALERT_PLUGOUT)
+            retrieve_and_rewrite("data.csv")
 
     curr_time = time.time()
     stop_time = curr_time + SLEEP_TIME*UNIT
