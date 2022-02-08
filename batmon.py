@@ -1,4 +1,5 @@
 import os, sys, time, threading
+import matplotlib.pyplot as plt
 from colorain import move_cursor
 
 def fancy_print(text):
@@ -49,8 +50,13 @@ def input_thread(handler, state_dict):
     inp.start()
 
 def retrieve_and_rewrite(filename):
+    # Retrieve the contents of the file, remove the trailing comma, and add a newline
     with open(filename, "r") as f:
         contents = f.read()[:-1]
+        lastline = f.readlines()[-1][:-1].split(",")
+        lastline = [int(k) for k in lastline]
+        plt.plot(lastline)
+        plt.show()
         contents+='\n'
     with open(filename, "w") as f:
         f.write(contents)
