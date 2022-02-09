@@ -1,6 +1,5 @@
 import os, sys, time, threading
 import pandas as pd
-import matplotlib.pyplot as plt
 import pyttsx3
 from colorain import move_cursor
 
@@ -52,7 +51,7 @@ def input_thread(handler, state_dict):
     inp.start()
 
 def plot_data(filename):
-    # Retrieve the contents of the file, remove the trailing comma, and add a newline
+    import matplotlib.pyplot as plt
     data = pd.read_csv(filename)
     battery = data.battery
     memory = data.memory
