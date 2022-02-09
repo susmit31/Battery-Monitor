@@ -1,5 +1,6 @@
 import os, sys, time, threading
 import matplotlib.pyplot as plt
+import pyttsx3
 from colorain import move_cursor
 
 def fancy_print(text):
@@ -82,8 +83,49 @@ else:
     MAX_CHARGE = 80
 
 CHECK_POW = 'upower -i $(upower -e | grep BAT) | grep -E "state|perc" > batmon.txt'
+'''
+An aside on redirection and piping. On UNIX, the pipe operator "prev|next" sends the output of "prev" to
+the input of "next". The redirection operator "prev > file" writes the output of "prev" to "file".
+
+In Python, {f = os.popen("command")} will pipe the output of "command" to a file object f. This is how
+we can capture stdout outputs from bash within Python. 
+
+However, for capturing stdout outputs FROM WITHIN PYTHON, i.e. outputs by print statements, here's what 
+we do. Under the hood, print() is writing to the io.StringIO stream object sys.stdout, i.e.
+print = sys.stdout.write + additional options. In the REPL, after the execution of each line, sys.stdout
+is opened in write mode, so the previous contents cannot be retrieved. For whole scripts, the outputs
+are buffered into one single stream, and then fed into sys.stdout.
+
+If we temporarily assign a blank StringIO() object to the name sys.stdout, whenever Python calls 
+sys.stdout.write, it'd be writing to our custom defined stream, not the actual standard output 
+stream. At the end of capturing, we'd restore the value of sys.stdout to its original value. 
+Here's the code:
+
+old_stdout = sys.stdout
+sys.stdout = StringIO()
+print("Whatever")
+print("Yes")
+print("OK")
+x = sys.stdout.getvalue()
+sys.stdout = old_stdout
+print(x) # prints "Whatever\nYes\nOK"
+
+While this is how it works under the hood, we need not write this tedious stretch of code for simply
+redirecting the output to a file. Here's the standard way to do it in Python. It's effectively a
+shorthand for the above code block.
+
+from contextlib import redirect_stdout
+with redirect_stdout(StringIO()) as f:
+    print("Whatever you want")
+output = f.read()
+
+Note that this WILL NOT work with {os.system()}, which sends the command to bash for execution, which 
+handles stdout from its own context. Therefore renaming sys.stdout to a blank StringIO() doesn't help.
+Therefore we have to use {os.popen()} to pipe the shell output into a file.
+'''
 ALERT_PLUGIN = f'spd-say "{MSG_PLUGIN}"'
 ALERT_PLUGOUT = f'spd-say "{MSG_PLUGOUT}"'
+ENGINE = pyttsx3.init()
 
 print("Press q to quit.")
 
@@ -99,11 +141,15 @@ while True:
 
     if output[1]=='discharging':
         if perc <= MIN_CHARGE:
-            os.system(ALERT_PLUGIN)
+            # os.system(ALERT_PLUGIN)
+            ENGINE.say(MSG_PLUGIN)
+            ENGINE.runAndWait()
             retrieve_and_rewrite("data.csv")
     else:
         if perc >= MAX_CHARGE:
-            os.system(ALERT_PLUGOUT)
+            # os.system(ALERT_PLUGOUT)
+            ENGINE.say(MSG_PLUGOUT)
+            ENGINE.runAndWait()
             retrieve_and_rewrite("data.csv")
 
     curr_time = time.time()

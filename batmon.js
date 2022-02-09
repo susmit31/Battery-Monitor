@@ -21,8 +21,8 @@ if (process.argv.length < 4){
 // Commands to execute in a shell
 const CHECK_POW = "upower -i $(upower -e | grep BAT) | grep -E \"state|perc\" > batmonjs.txt";
 const ALERT = {
-    PLUGIN: `spd-say "${MSG.PLUGIN}"`,
-    PLUGOUT: `spd-say "${MSG.PLUGOUT}"`
+    PLUGIN: `espeak "${MSG.PLUGIN}"`,
+    PLUGOUT: `espeak "${MSG.PLUGOUT}"`
 };
 
 // Core functionality
