@@ -1,4 +1,5 @@
 import os, sys, time, threading
+import pandas as pd
 import matplotlib.pyplot as plt
 import pyttsx3
 from colorain import move_cursor
@@ -50,18 +51,16 @@ def input_thread(handler, state_dict):
     inp = threading.Thread(target=handler, args= (state_dict,))
     inp.start()
 
-def retrieve_and_rewrite(filename):
+def plot_data(filename):
     # Retrieve the contents of the file, remove the trailing comma, and add a newline
-    with open(filename, "r") as f:
-        contents = f.read()[:-1]
-        f.seek(0)
-        lastline = f.readlines()[-1][:-1].split(",")
-        lastline = [int(k) for k in lastline]
-        plt.plot(lastline)
-        plt.show()
-        contents+='\n'
-    with open(filename, "w") as f:
-        f.write(contents)
+    data = pd.read_csv(filename)
+    battery = data.battery
+    memory = data.memory
+    plt.figure()
+    plt.plot(battery)
+    plt.plot(memory)
+    plt.legend(['Battery', 'Memory'])
+    plt.show()
 
 ########################
 # BASIC CONFIGURATIONS #
@@ -83,6 +82,7 @@ else:
     MAX_CHARGE = 80
 
 CHECK_POW = 'upower -i $(upower -e | grep BAT) | grep -E "state|perc" > batmon.txt'
+CHECK_MEM = 'free -m'
 '''
 An aside on redirection and piping. On UNIX, the pipe operator "prev|next" sends the output of "prev" to
 the input of "next". The redirection operator "prev > file" writes the output of "prev" to "file".
@@ -132,25 +132,31 @@ print("Press q to quit.")
 state = {'quit':False}
 input_thread(await_input, state)
 while True:
+    # checking power
     os.system(CHECK_POW)
     with open("batmon.txt") as f:
         output = f.read().split()
-    perc = int(output[3][:-1])
+    bat_perc = int(output[3][:-1])
+    
+    # checking memory usage
+    with os.popen(CHECK_MEM) as f:
+        mem = [int(m) for m in f.readlines()[1].split()[1:]]
+    mem_usg = round(100*(1 - mem[-1]/mem[0]),2)
+
     with open("data.csv", "a") as f:
-        f.write(f"{perc},")
+        f.write(f"\n{bat_perc}, {mem_usg}")
 
     if output[1]=='discharging':
-        if perc <= MIN_CHARGE:
+        if bat_perc <= MIN_CHARGE:
             # os.system(ALERT_PLUGIN)
             ENGINE.say(MSG_PLUGIN)
             ENGINE.runAndWait()
-            retrieve_and_rewrite("data.csv")
     else:
-        if perc >= MAX_CHARGE:
+        if bat_perc >= MAX_CHARGE:
             # os.system(ALERT_PLUGOUT)
             ENGINE.say(MSG_PLUGOUT)
             ENGINE.runAndWait()
-            retrieve_and_rewrite("data.csv")
+            plot_data("data.csv")
 
     curr_time = time.time()
     stop_time = curr_time + SLEEP_TIME*UNIT
