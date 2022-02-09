@@ -53,6 +53,7 @@ def retrieve_and_rewrite(filename):
     # Retrieve the contents of the file, remove the trailing comma, and add a newline
     with open(filename, "r") as f:
         contents = f.read()[:-1]
+        f.seek(0)
         lastline = f.readlines()[-1][:-1].split(",")
         lastline = [int(k) for k in lastline]
         plt.plot(lastline)
@@ -66,7 +67,7 @@ def retrieve_and_rewrite(filename):
 SLEEP_TIME = 2 #sleep for 2 "units"
 UNIT = 60 #seconds
 MSG_PLUGIN = "Plug it in, you frickin moron!" #what to yell when the battery's low
-MSG_PLUGOUT = "Plug it out, Red-hair"
+MSG_PLUGOUT = "Plug it out, you damned brat!"
 ########################
 
 if len(sys.argv) < 2:
