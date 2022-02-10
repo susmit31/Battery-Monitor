@@ -32,7 +32,7 @@ def getChar():
         oldSettings = termios.tcgetattr(fd)
 
         try:
-            tty.setcbreak(fd)
+            tty.setcbreak(fd) # set non echo mode
             answer = sys.stdin.read(1)
         finally:
             termios.tcsetattr(fd, termios.TCSADRAIN, oldSettings)
@@ -59,7 +59,7 @@ def plot_data(filename):
     plt.plot(battery)
     plt.plot(memory)
     plt.legend(['Battery', 'Memory'])
-    plt.show()
+    plt.savefig('./graphs/perf.png')
 
 ########################
 # BASIC CONFIGURATIONS #
@@ -122,8 +122,8 @@ Note that this WILL NOT work with {os.system()}, which sends the command to bash
 handles stdout from its own context. Therefore renaming sys.stdout to a blank StringIO() doesn't help.
 Therefore we have to use {os.popen()} to pipe the shell output into a file.
 '''
-ALERT_PLUGIN = f'spd-say "{MSG_PLUGIN}"'
-ALERT_PLUGOUT = f'spd-say "{MSG_PLUGOUT}"'
+ALERT_PLUGIN = f'espeak "{MSG_PLUGIN}"'
+ALERT_PLUGOUT = f'espeak "{MSG_PLUGOUT}"'
 ENGINE = pyttsx3.init()
 
 print("Press q to quit.")
