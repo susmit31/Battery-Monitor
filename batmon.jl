@@ -8,7 +8,7 @@ struct Commands
     plugout::Cmd
     plugin::Cmd
 end
-cmds = Commands(`espeak $(msg.plugout)`, `espeak $(msg.plugin)`)
+cmds = Commands(`espeak -p 70 -s 150 $(msg.plugout)`, `espeak -p 70 -s 150 $(msg.plugin)`)
 
 struct Battery
     state::String
@@ -31,4 +31,5 @@ while true
             run(cmds.plugout)
         end
     end
+    sleep(120)
 end
