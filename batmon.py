@@ -52,7 +52,7 @@ def input_thread(handler, state_dict):
 
 def plot_data(filename):
     import matplotlib.pyplot as plt
-    data = pd.read_csv(filename)
+    data = pd.read_csv(filename).tail(400)
     battery = data.battery
     memory = data.memory
     plt.figure()
