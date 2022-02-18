@@ -66,7 +66,7 @@ while true
     # If doesn't already exist, prepare the file
     if !(fname in readdir("."))
         data = open(fname, "w")
-        write(data, "charge,memory\n")
+        write(data, "battery,memory\n")
         close(data)
     end
     # Append the data to the file
