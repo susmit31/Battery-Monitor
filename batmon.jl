@@ -1,5 +1,7 @@
+# Imports
 using PyPlot, DataFrames, CSV
 
+# Defining useful structs
 struct Msg
     plugout::String
     plugin::String
@@ -7,10 +9,10 @@ end
 msg = Msg("Plug it out, you damned brat!", "Plug it in, you frickin moron!")
 
 struct Commands
-    plugout::Cmd
-    plugin::Cmd
-    battery::Cmd
-    memory::Cmd
+    plugout::Union{Cmd, Base.OrCmds}
+    plugin::Union{Cmd, Base.OrCmds}
+    battery::Union{Cmd, Base.OrCmds}
+    memory::Union{Cmd, Base.OrCmds}
 end
 cmds = Commands(
     `espeak -p 70 -s 150 $(msg.plugout)`, 
@@ -22,6 +24,22 @@ cmds = Commands(
 struct Battery
     state::String
     power::String
+end
+
+# Defining plotting function
+function plot_data(fname::String)
+    # Load data
+    data = DataFrame(CSV.File("./$fname"))
+
+    if length(data.battery) < 400
+        plt.plot(data.battery)
+        plt.plot(data.memory)
+    else
+        plt.plot(data.battery[end-400:end])
+        plt.plot(data.battery[end-400:end])
+    end
+    plt.savefig("./graphs/perf-jl.png")
+    plt.close()
 end
 
 while true
@@ -41,16 +59,33 @@ while true
     totalmem = parse(Int16, meminfo[1])
     freemem = parse(Int16, meminfo[end])
     usedmem = totalmem - freemem
-    memusg = usedmem / totalmem
+    memusg = round(100 * usedmem / totalmem, digits=2) # getting the memory usage percentage
 
+    # Writing / appending the data to a csv
+    fname = "data-jl.csv"
+    # If doesn't already exist, prepare the file
+    if !(fname in readdir("."))
+        data = open(fname, "w")
+        write(data, "charge,memory\n")
+        close(data)
+    end
+    # Append the data to the file
+    data = open(fname,"a")
+    write(data, "$charge,$memusg\n")
+    close(data)
+
+    # Notification squad
     if battery.state == "discharging"
         if charge <= 20
             run(cmds.plugin)
         end
     else
-        if charge >= 80
+        if charge >= 60
             run(cmds.plugout)
+            plot_data(fname)
         end
     end
+
+    # Repeat after 2 minutes
     sleep(120)
 end
