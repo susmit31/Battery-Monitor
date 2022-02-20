@@ -6,7 +6,6 @@ struct Msg
     plugout::String
     plugin::String
 end
-msg = Msg("Plug it out, you damned brat!", "Plug it in, you frickin moron!")
 
 struct Commands
     plugout::Union{Cmd, Base.OrCmds}
@@ -14,21 +13,23 @@ struct Commands
     battery::Union{Cmd, Base.OrCmds}
     memory::Union{Cmd, Base.OrCmds}
 end
-cmds = Commands(
-    `espeak -p 70 -s 150 $(msg.plugout)`, 
-    `espeak -p 70 -s 150 $(msg.plugin)`,
-    pipeline(`upower -e`, `grep BAT`),
-    `free -m`
-)
 
 struct Battery
     state::String
     power::String
 end
 
+msg = Msg("Plug it out, you damned brat!", "Plug it in, you frickin moron!")
+
+cmds = Commands(
+    `espeak -p 50 -s 170 $(msg.plugout)`, 
+    `espeak -p 50 -s 170 $(msg.plugin)`,
+    pipeline(`upower -e`, `grep BAT`),
+    `free -m`
+)
+
 # Defining plotting function
 function plot_data(fname::String)
-    # Load data
     data = DataFrame(CSV.File("./$fname"))
 
     if length(data.battery) < 400
@@ -38,10 +39,25 @@ function plot_data(fname::String)
         plt.plot(data.battery[end-400:end])
         plt.plot(data.battery[end-400:end])
     end
+    
     plt.savefig("./graphs/perf-jl.png")
     plt.close()
 end
 
+println("Hello from Batmon.jl")
+
+# Setting thresholds
+l_lim, u_lim = map(x->parse(Int, x), Base.ARGS[1:2])
+
+# Asynchronously managing keyboard input
+@async while true
+    keypress = readline(stdin)
+    if keypress == "q"
+        exit()
+    end
+end
+
+# Main loop
 while true
     # Getting battery info
     battery_dev = read(cmds.battery, String)[1:(end-1)]
@@ -76,11 +92,11 @@ while true
 
     # Notification squad
     if battery.state == "discharging"
-        if charge <= 20
+        if charge <= l_lim
             run(cmds.plugin)
         end
     else
-        if charge >= 60
+        if charge >= u_lim
             run(cmds.plugout)
             plot_data(fname)
         end
