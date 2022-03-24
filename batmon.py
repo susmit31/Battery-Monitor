@@ -73,6 +73,7 @@ os.chdir(sys.path[0]) # the first element of the path list
 # if the script was invoked from elsewhere,
 # we'll now move into the code's directory
 
+# Make a directory to store graphs if it's not already there 
 if 'graphs' not in os.listdir():
     os.mkdir('graphs')
 
