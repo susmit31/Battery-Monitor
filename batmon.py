@@ -67,6 +67,15 @@ SLEEP_TIME = 2 #sleep for 2 "units"
 UNIT = 60 #seconds
 MSG_PLUGIN = "Plug it in, you frickin moron!" #what to yell when the battery's low
 MSG_PLUGOUT = "Plug it out, you damned brat!"
+
+os.chdir(os.sys.path[0]) # the first element of the path list
+# is the directory where the script lives
+# if the script was invoked from elsewhere,
+# we'll now move into the code's directory
+
+if 'graphs' not in os.listdir():
+    os.mkdir('graphs')
+
 ########################
 
 if len(sys.argv) < 2:
@@ -130,6 +139,7 @@ print("Press q to quit.")
 
 state = {'quit':False}
 input_thread(await_input, state)
+
 while True:
     # checking power
     os.system(CHECK_POW)
