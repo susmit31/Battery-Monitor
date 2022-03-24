@@ -77,6 +77,12 @@ os.chdir(sys.path[0]) # the first element of the path list
 if 'graphs' not in os.listdir():
     os.mkdir('graphs')
 
+# Make a file to store data if it's not already there
+if 'data.csv' not in os.listdir():
+    data = open('data.csv', 'w')
+    data.write('battery,memory')
+    data.close()
+
 ########################
 
 if len(sys.argv) < 2:
