@@ -96,7 +96,7 @@ if len(sys.argv) > 2:
 else:
     MAX_CHARGE = 80
 
-CHECK_POW = 'upower -i $(upower -e | grep BAT) | grep -E "state|perc" > batmon.txt'
+CHECK_POW = "echo \"$(acpi | awk '{print $4}' | sed 's/%,//g') $(acpi | awk '{print $3}' | sed 's/,//g')\""
 CHECK_MEM = 'free -m'
 '''
 An aside on redirection and piping. On UNIX, the pipe operator "prev|next" sends the output of "prev" to
@@ -149,10 +149,9 @@ input_thread(await_input, state)
 
 while True:
     # checking power
-    os.system(CHECK_POW)
-    with open("batmon.txt") as f:
-        output = f.read().split()
-    bat_perc = int(output[3][:-1])
+    with os.popen(CHECK_POW) as f:
+        output = f.read().split(' ')
+    bat_perc = int(output[0])
     
     # checking memory usage
     with os.popen(CHECK_MEM) as f:
@@ -162,7 +161,7 @@ while True:
     with open("data.csv", "a") as f:
         f.write(f"\n{bat_perc}, {mem_usg}")
 
-    if output[1]=='discharging':
+    if output[1]=='Discharging\n':
         if bat_perc <= MIN_CHARGE:
             # os.system(ALERT_PLUGIN)
             ENGINE.say(MSG_PLUGIN)
