@@ -96,6 +96,11 @@ if len(sys.argv) > 2:
 else:
     MAX_CHARGE = 80
 
+if len(sys.argv) > 3:
+    AMP = int(sys.argv[3])
+else:
+    AMP = 100
+
 CHECK_POW = "echo \"$(acpi | awk '{print $4}' | sed 's/%,//g') $(acpi | awk '{print $3}' | sed 's/,//g')\""
 CHECK_MEM = 'free -m'
 '''
@@ -138,8 +143,8 @@ Note that this WILL NOT work with {os.system()}, which sends the command to bash
 handles stdout from its own context. Therefore renaming sys.stdout to a blank StringIO() doesn't help.
 Therefore we have to use {os.popen()} to pipe the shell output into a file.
 '''
-ALERT_PLUGIN = f'espeak "{MSG_PLUGIN}"'
-ALERT_PLUGOUT = f'espeak "{MSG_PLUGOUT}"'
+ALERT_PLUGIN = f'espeak "{MSG_PLUGIN}" -a {AMP}'
+ALERT_PLUGOUT = f'espeak "{MSG_PLUGOUT}" -a {AMP}'
 ENGINE = pyttsx3.init()
 
 print("Press q to quit.")
@@ -163,14 +168,10 @@ while True:
 
     if output[1]=='Discharging\n':
         if bat_perc <= MIN_CHARGE:
-            # os.system(ALERT_PLUGIN)
-            ENGINE.say(MSG_PLUGIN)
-            ENGINE.runAndWait()
+            os.system(ALERT_PLUGIN)
     else:
         if bat_perc >= MAX_CHARGE:
-            # os.system(ALERT_PLUGOUT)
-            ENGINE.say(MSG_PLUGOUT)
-            ENGINE.runAndWait()
+            os.system(ALERT_PLUGOUT)
             plot_data("data.csv")
 
     curr_time = time.time()
